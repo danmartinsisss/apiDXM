@@ -1,0 +1,67 @@
+#include 'totvs.ch'
+#include 'tlpp-core.th'
+
+/*/{Protheus.doc} ROMANEIO_FARDAO
+    Classe para listagem de romaneios de fardao
+    @author Daniel Martins
+    /*/
+
+NAMESPACE treinamento.api
+  
+class ROMANEIO_FARDAO
+
+    public method new() constructor
+    
+    @get(endpoint='/algodoeira/romaneio',description='Listagem de romaneios de fardao')
+    public method listar() as logical
+
+end class
+
+method new() class ROMANEIO_FARDAO ;return self
+
+method listar() class CLIENTES
+
+    Local cErrorStack       as character
+    Local cErrorDescr       as character
+    Local err               as object
+    Local jResp             as json
+    Local jRomaneio         as json
+
+    try
+
+        jResp           := jsonObject():new()
+        jResp['DXM']    := array(0)
+
+        dbSelectArea("DXM")
+        dbSetOrder(1)
+        dbGoTop()
+
+        While .not. eof()
+
+            jRomaneio              := jsonObject():new()
+            jRomaneio['filial'   ] := alltrim(DXM_FILIAL )
+            jRomaneio['codigo'   ] := alltrim(DXM_CODIGO )
+            jRomaneio['fazenda'  ] := alltrim(DXM_FAZ    )
+            jRomaneio['motorista'] := alltrim(DXM_MOTORA )
+            jRomaneio['placa'    ] := alltrim(DXM_PLACA  )
+
+            aadd(jResp['DXM'],jRomaneio)
+
+            dbSkip()
+
+        Enddo
+
+        oRest:setResponse(jResp:toJson())
+
+    catch err
+
+        cErrorStack     := err:errorstack
+        cErrorDescr     := err:description
+
+    endtry   
+
+    IF lRPC
+        rpcClearEnv()
+    EndIF     
+
+return .T.
