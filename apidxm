@@ -1,67 +1,244 @@
 #include 'totvs.ch'
 #include 'tlpp-core.th'
 
-/*/{Protheus.doc} ROMANEIO_FARDAO
-    Classe para listagem de romaneios de fardao
+/*/{Protheus.doc} Cadastro de Fardão
+    Classe para cadastro de fardão tabela DXL
     @author Daniel Martins
     /*/
-
-NAMESPACE treinamento.api
-  
-class ROMANEIO_FARDAO
+class zGMSAPI003 from fwAdapterBaseV2
 
     public method new() constructor
-    
-    @get(endpoint='/algodoeira/romaneio',description='Listagem de romaneios de fardao')
-    public method listar() as logical
+
+    @get('/algodoeira/lista/rolinhos')
+    public method lista_rolinhos() as logical
+
+    @post('/algodoeira/rolinho/novo')
+    public method novo_rolinho() as logical
 
 end class
 
-method new() class ROMANEIO_FARDAO ;return self
+method new() class zGMSAPI003; return self
 
-method listar() class CLIENTES
+method novo_rolinho() class zGMSAPI003
 
-    Local cErrorStack       as character
-    Local cErrorDescr       as character
-    Local err               as object
-    Local jResp             as json
-    Local jRomaneio         as json
-
+    local jBodyReq      as json
+    local aDados        as array    
+    local nOpc          as numeric
+    local cXfilia       as character
+    
+    Private lMsErroAuto as logical
+    Private err as object
+    
     try
 
+		jBodyReq := jsonObject():new()
+		jBodyReq:fromJson(oRest:getBodyRequest())
+        
+        cXfilia     := jBodyReq['dxl_xfilia']
+        cCodigo     := jBodyReq['dxl_codigo']
+        cDtdigi     := jBodyReq['dxl_dtdigi']
+        cSafra      := jBodyReq['dxl_safra ']
+        cCodpro     := jBodyReq['dxl_codpro']
+        cPrdtor     := jBodyReq['dxl_prdtor']
+        cLjpro      := jBodyReq['dxl_ljpro ']
+        cFaz        := jBodyReq['dxl_faz   ']
+        cTalhao     := jBodyReq['dxl_talhao']
+        cCodvar     := jBodyReq['dxl_codvar']
+        cLocal      := jBodyReq['dxl_local ']
+        cPsesti     := jBodyReq['dxl_psesti']
+        cBorda      := jBodyReq['dxl_borda ']
+        cOrdclt     := jBodyReq['dxl_ordclt']
+        cCordx      := jBodyReq['dxl_cordx ']
+        cCordy      := jBodyReq['dxl_cordy ']
+        cObs        := jBodyReq['dxl_obs   ']
+        cXrfid      := jBodyReq['dxl_xrfid ']
+        cXsnetq     := jBodyReq['dxl_xsnetq']
+        cXumicl     := jBodyReq['dxl_xumicl']
+
+        aDados  := {{"DXL_XFILIA"   ,cXfilia ,Nil},;
+                    {"DXL_CODIGO"   ,cCodigo ,Nil},;
+                    {"DXL_DTDIGI"   ,cDtdigi ,Nil},;
+                    {"DXL_SAFRA "   ,cSafra  ,Nil},;
+                    {"DXL_CODPRO"   ,cCodpro ,Nil},;
+                    {"DXL_PRDTOR"   ,cPrdtor ,Nil},;
+                    {"DXL_LJPRO "   ,cLjpro  ,Nil},;
+                    {"DXL_FAZ   "   ,cFaz    ,Nil},;
+                    {"DXL_TALHAO"   ,cTalhao ,Nil},;
+                    {"DXL_CODVAR"   ,cCodvar ,Nil},;
+                    {"DXL_LOCAL "   ,cLocal  ,Nil},;
+                    {"DXL_PSESTI"   ,cPsesti ,Nil},;
+                    {"DXL_BORDA "   ,cBorda  ,Nil},;
+                    {"DXL_ORDCLT"   ,cOrdclt ,Nil},;
+                    {"DXL_CORDX "   ,cCordx  ,Nil},;
+                    {"DXL_CORDY "   ,cCordy  ,Nil},;
+                    {"DXL_OBS   "   ,cObs    ,Nil},;
+                    {"DXL_XRFID "   ,cXrfid  ,Nil},;
+                    {"DXL_XSNETQ"   ,cXsnetq ,Nil},;
+                    {"DXL_XUMICL"   ,cXumicl ,Nil}}
+
+        nOpc    := 3
+
+        lMsErroAuto := .F.
+        msExecAuto({|x,y| agra601(x,y)}, aDados, nOpc)
+        
+        if lMsErroAuto
+            mostraErro('\data\','erro_dxl.txt')
+            cError := memoread('\data\erro_dxl.txt')
+
+            err := errorClass():new()
+            err:description := cError
+
+            throw err
+
+        EndIF
+
         jResp           := jsonObject():new()
-        jResp['DXM']    := array(0)
-
-        dbSelectArea("DXM")
-        dbSetOrder(1)
-        dbGoTop()
-
-        While .not. eof()
-
-            jRomaneio              := jsonObject():new()
-            jRomaneio['filial'   ] := alltrim(DXM_FILIAL )
-            jRomaneio['codigo'   ] := alltrim(DXM_CODIGO )
-            jRomaneio['fazenda'  ] := alltrim(DXM_FAZ    )
-            jRomaneio['motorista'] := alltrim(DXM_MOTORA )
-            jRomaneio['placa'    ] := alltrim(DXM_PLACA  )
-
-            aadd(jResp['DXM'],jRomaneio)
-
-            dbSkip()
-
-        Enddo
+        jResp['dxl_codigo'  ]  := DXL->DXL_CODIGO
+        jResp['dxl_obs'     ]  := DXL->DXL_OBS
+        jResp['status'      ]  := 'Rolinho cadastrado com sucesso'
 
         oRest:setResponse(jResp:toJson())
 
     catch err
 
-        cErrorStack     := err:errorstack
-        cErrorDescr     := err:description
+        cError          := err:description
+        jResp           := jsonObject():new()
+        jResp['error']  := cError
 
-    endtry   
+        oRest:setFault(jResp:toJson())
 
-    IF lRPC
-        rpcClearEnv()
-    EndIF     
+    endtry
 
-return .T.
+
+Return .T.
+
+method lista_rolinhos() class zGMSAPI003
+
+    local nError            as numeric
+    local cError            as character
+
+    local jQueryStr         as json
+    local jResp             as json
+    
+    local cSQL              as character
+    local cWhere            as character
+
+    local cCodpro           as character
+    local cPrdtor           as character
+    local cLjpro            as character
+    local cFaz              as character
+    local cTalhao           as character
+    local cCodvar           as character
+    local cLocal            as character
+    local cPsesti           as character
+    local cBorda            as character
+    local cOrdclt           as character
+    local cCordx            as character
+    local cCordy            as character
+    local cObs              as character
+    local cXrfid            as character
+    local cXsnetq           as character
+    local cXumicl           as character
+
+    local nSize             as numeric
+    local nPage             as numeric
+    local cOrder            as character
+    local cSearch           as character
+
+    try
+        jQueryStr           := oRest:getQueryRequest()
+
+        cCodigo             := jQueryStr['DXL_CODIGO']
+        cDtdigi             := jQueryStr['DXL_DTDIGI']
+        cSafra              := jQueryStr['DXL_SAFRA' ]
+        cCodpro             := jQueryStr['DXL_CODPRO']
+        cPrdtor             := jQueryStr['DXL_PRDTOR']
+        cLjpro              := jQueryStr['DXL_LJPRO' ]
+        cFaz                := jQueryStr['DXL_FAZ'   ]
+        cTalhao             := jQueryStr['DXL_TALHAO']
+        cCodvar             := jQueryStr['DXL_CODVAR']
+        cLocal              := jQueryStr['DXL_LOCAL' ]
+        cPsesti             := jQueryStr['DXL_PSESTI']
+        cBorda              := jQueryStr['DXL_BORDA' ]
+        cOrdclt             := jQueryStr['DXL_ORDCLT']
+        cCordx              := jQueryStr['DXL_CORDX' ]
+        cCordy              := jQueryStr['DXL_CORDY' ]
+        cObs                := jQueryStr['DXL_OBS'   ]
+        cXrfid              := jQueryStr['DXL_OBS'   ]
+        cXsnetq             := jQueryStr['DXL_XSNETQ']
+        cXumicl             := jQueryStr['DXL_XUMICL']
+        nSize               := jQueryStr['pageSize'  ]
+        nPage               := jQueryStr['Page'      ]
+        cOrder              := jQueryStr['order'     ]
+        cSearch             := jQueryStr['search'    ]
+
+
+        nSize               := if(empty(nSize), 20, nSize)
+        nPage               := if(empty(nPage), 1, nPage)
+
+        cSQL                := "SELECT #QueryFields# FROM " + retSqlName("DXL") + " DXL"
+        cSQL                += CRLF + "WHERE #QueryWhere# "
+
+        cWhere              := "D_E_L_E_T_ <> '*'"
+
+        if .not. empty(cCodigo)
+            cWhere           += CRLF + "AND DXL_CODIGO = '" + cCodigo + "'"
+        EndIF
+
+        if .not. empty(cSearch)
+            cWhere           += CRLF + "AND DXL_CODIGO LIKE '%" + cSearch + "%'"
+        EndIF
+        
+        _Super:new('GET',.T.)
+        ::addMapFields('DXL_CODIGO'     , 'DXL_CODIGO'      , .T.)
+        ::addMapFields('DXL_DTDIGI'     , 'DXL_DTDIGI'      , .T.)
+        ::addMapFields('DXL_SAFRA'      , 'DXL_SAFRA'       , .T.)
+        ::addMapFields('DXL_CODPRO'     , 'DXL_CODPRO'      , .T.)
+        ::addMapFields('DXL_PRDTOR'     , 'DXL_PRDTOR'      , .T.)
+        ::addMapFields('DXL_LJPRO'      , 'DXL_LJPRO'       , .T.)
+        ::addMapFields('DXL_FAZ'        , 'DXL_FAZ'         , .T.)
+        ::addMapFields('DXL_TALHAO'     , 'DXL_TALHAO'      , .T.)
+        ::addMapFields('DXL_CODVAR'     , 'DXL_CODVAR'      , .T.)
+        ::addMapFields('DXL_LOCAL'      , 'DXL_LOCAL'       , .T.)
+        ::addMapFields('DXL_PSESTI'     , 'DXL_PSESTI'      , .T.)
+        ::addMapFields('DXL_BORDA'      , 'DXL_BORDA'       , .T.)
+        ::addMapFields('DXL_ORDCLT'     , 'DXL_ORDCLT'      , .T.)
+        ::addMapFields('DXL_CORDX'      , 'DXL_CORDX'       , .T.)
+        ::addMapFields('DXL_CORDY'      , 'DXL_CORDY'       , .T.)
+        ::addMapFields('DXL_OBS'        , 'DXL_OBS'         , .T.)
+        ::addMapFields('DXL_OBS'        , 'DXL_XRFID'       , .T.)
+        ::addMapFields('DXL_XSNETQ'     , 'DXL_XSNETQ'      , .T.)
+        ::addMapFields('DXL_XUMICL'     , 'DXL_XUMICL'      , .T.)
+    
+        ::setQuery(cSQL)
+        ::setWhere(cWhere)
+        ::setPageSize(nSize)
+        ::setPage(nPage)
+        ::setOrder(cOrder)
+
+        if ::execute()
+            ::fillGetResponse()
+            oRest:setResponse(::getJsonResponse())
+
+        else
+            nError          := ::getCode()
+            cError          := ::getMessage()
+
+            jResp           := jsonObject():new()
+            jResp['error']  := cError
+
+            oRest:setFault(jResp:toJson())
+        EndIF
+
+    catch err
+
+        cError := err:errorstack
+
+        jResp           := jsonObject():new()
+        jResp['error']  := cError
+
+        oRest:setFault(jResp:toJson())
+
+    endtry
+
+Return .T.
