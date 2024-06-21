@@ -12,71 +12,70 @@ class zGMSAPI003 from fwAdapterBaseV2
     @get('/algodoeira/lista/rolinhos')
     public method lista_rolinhos() as logical
 
-    @post('/algodoeira/rolinho/novo')
-    public method novo_rolinho() as logical
+    @post('/algodoeira/rolinho/new')
+    public method incluir_rolinho() as logical
 
 end class
 
 method new() class zGMSAPI003; return self
 
-method novo_rolinho() class zGMSAPI003
-
-    local jBodyReq      as json
-    local aDados        as array    
-    local nOpc          as numeric
-    local cXfilia       as character
+method incluir_rolinho() class zGMSAPI003
     
+    Local jBodyReq  as json
+    Local aDados    as array
+    Local nOpc      as numeric
+    Local cCodigo   as character
+
     Private lMsErroAuto as logical
-    Private err as object
-    
+
     try
-
-		jBodyReq := jsonObject():new()
-		jBodyReq:fromJson(oRest:getBodyRequest())
         
-        cXfilia     := jBodyReq['dxl_xfilia']
-        cCodigo     := jBodyReq['dxl_codigo']
-        cDtdigi     := jBodyReq['dxl_dtdigi']
-        cSafra      := jBodyReq['dxl_safra ']
-        cCodpro     := jBodyReq['dxl_codpro']
-        cPrdtor     := jBodyReq['dxl_prdtor']
-        cLjpro      := jBodyReq['dxl_ljpro ']
-        cFaz        := jBodyReq['dxl_faz   ']
-        cTalhao     := jBodyReq['dxl_talhao']
-        cCodvar     := jBodyReq['dxl_codvar']
-        cLocal      := jBodyReq['dxl_local ']
-        cPsesti     := jBodyReq['dxl_psesti']
-        cBorda      := jBodyReq['dxl_borda ']
-        cOrdclt     := jBodyReq['dxl_ordclt']
-        cCordx      := jBodyReq['dxl_cordx ']
-        cCordy      := jBodyReq['dxl_cordy ']
-        cObs        := jBodyReq['dxl_obs   ']
-        cXrfid      := jBodyReq['dxl_xrfid ']
-        cXsnetq     := jBodyReq['dxl_xsnetq']
-        cXumicl     := jBodyReq['dxl_xumicl']
+        jBodyReq := jsonObject():new()
+        jBodyReq:fromJson(oRest:getBodyRequest())
 
-        aDados  := {{"DXL_XFILIA"   ,cXfilia ,Nil},;
-                    {"DXL_CODIGO"   ,cCodigo ,Nil},;
+        cCodigo   := jBodyReq['dxl_codigo']
+        cDtdigi   := jBodyReq['dxl_dtdigi']
+        cSafra    := jBodyReq['dxl_safra' ]
+        cCodpro   := jBodyReq['dxl_codpro']
+        cPrdtor   := jBodyReq['dxl_prdtor']
+        cLjpro    := jBodyReq['dxl_ljpro' ]
+        cFaz      := jBodyReq['dxl_faz'   ]    
+        cTalhao   := jBodyReq['dxl_talhao']
+        cCodvar   := jBodyReq['dxl_codvar']
+        cLocal    := jBodyReq['dxl_local' ]
+        nPsesti   := jBodyReq['dxl_psesti']
+        cBorda    := jBodyReq['dxl_borda' ]
+        cStatus   := jBodyReq['dxl_status']
+        cOrdclt   := jBodyReq['dxl_ordclt']
+        cCordx    := jBodyReq['dxl_cordx' ]
+        cCordy    := jBodyReq['dxl_cordy' ]
+        cObs      := jBodyReq['dxl_obs'   ]
+        cOrigem   := jBodyReq['dxl_origem']
+        cXrfid    := jBodyReq['dxl_obs'   ]
+        cXsnetq   := jBodyReq['dxl_xsnetq']
+        nXumicl   := jBodyReq['dxl_xumicl']
+
+        aDados  := {{"DXL_CODIGO"   ,cCodigo ,Nil},;
                     {"DXL_DTDIGI"   ,cDtdigi ,Nil},;
-                    {"DXL_SAFRA "   ,cSafra  ,Nil},;
+                    {"DXL_SAFRA"    ,cSafra  ,Nil},;
                     {"DXL_CODPRO"   ,cCodpro ,Nil},;
                     {"DXL_PRDTOR"   ,cPrdtor ,Nil},;
-                    {"DXL_LJPRO "   ,cLjpro  ,Nil},;
-                    {"DXL_FAZ   "   ,cFaz    ,Nil},;
+                    {"DXL_LJPRO"    ,cLjpro  ,Nil},;
+                    {"DXL_FAZ"      ,cFaz    ,Nil},;
                     {"DXL_TALHAO"   ,cTalhao ,Nil},;
                     {"DXL_CODVAR"   ,cCodvar ,Nil},;
-                    {"DXL_LOCAL "   ,cLocal  ,Nil},;
-                    {"DXL_PSESTI"   ,cPsesti ,Nil},;
-                    {"DXL_BORDA "   ,cBorda  ,Nil},;
+                    {"DXL_LOCAL"    ,cLocal  ,Nil},;
+                    {"DXL_PSESTI"   ,nPsesti ,Nil},;
+                    {"DXL_BORDA"    ,cBorda  ,Nil},;
+                    {"DXL_STATUS"   ,cStatus ,Nil},;
                     {"DXL_ORDCLT"   ,cOrdclt ,Nil},;
-                    {"DXL_CORDX "   ,cCordx  ,Nil},;
-                    {"DXL_CORDY "   ,cCordy  ,Nil},;
-                    {"DXL_OBS   "   ,cObs    ,Nil},;
-                    {"DXL_XRFID "   ,cXrfid  ,Nil},;
+                    {"DXL_CORDX"    ,cCordx  ,Nil},;
+                    {"DXL_CORDY"    ,cCordy  ,Nil},;
+                    {"DXL_OBS"      ,cObs    ,Nil},;
+                    {"DXL_ORIGEM"   ,cOrigem ,Nil},;
+                    {"DXL_XRFID"    ,cXrfid  ,Nil},;
                     {"DXL_XSNETQ"   ,cXsnetq ,Nil},;
-                    {"DXL_XUMICL"   ,cXumicl ,Nil}}
-
-        nOpc    := 3
+                    {"DXL_XUMICL"   ,nXumicl ,Nil}}
 
         lMsErroAuto := .F.
         msExecAuto({|x,y| agra601(x,y)}, aDados, nOpc)
@@ -242,3 +241,31 @@ method lista_rolinhos() class zGMSAPI003
     endtry
 
 Return .T.
+
+
+//Esse aqui é o JSON de exemplo que estou enviando no POST
+{
+  "dxl_codigo": "999996",
+  "dxl_dtdigi": "2024-06-20T12:20:34",
+  "dxl_safra": "2324",
+  "dxl_codpro": "0103000001",
+  "dxl_prdtor": "1",
+  "dxl_ljpro": "0001",
+  "dxl_faz": "11",
+  "dxl_talhao": "11-SM04-10",
+  "dxl_codvar": "603018",
+  "dxl_local": "04",
+  "dxl_psesti": 2800,
+  "dxl_borda": "2",
+  "dxl_status": "1",
+  "dxl_ordclt": "999",
+  "dxl_cordx": "-12.905197126953128",
+  "dxl_cordy": "-55.93049951015627",
+  "dxl_obs": "Cadastrado por daniel via API",
+  "dxl_origem": "A",
+  "dxl_xrfid": "123456asd213456asd",
+  "dxl_xsnetq": "21605259206",
+  "dxl_xumicl": 8
+}
+
+
