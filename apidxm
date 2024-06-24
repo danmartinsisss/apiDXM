@@ -1,5 +1,10 @@
 #include 'totvs.ch'
 #include 'tlpp-core.th'
+#include "protheus.ch"
+#include "rwmake.ch"
+#INCLUDE "tbiconn.ch"
+#include "topconn.ch"
+#Include "FWMVCDEF.CH"
 
 /*/{Protheus.doc} Cadastro de Fardão
     Classe para cadastro de fardão tabela DXL
@@ -19,6 +24,7 @@ end class
 
 method new() class zGMSAPI003; return self
 
+
 method incluir_rolinho() class zGMSAPI003
     
     Local jBodyReq  as json
@@ -33,6 +39,7 @@ method incluir_rolinho() class zGMSAPI003
         jBodyReq := jsonObject():new()
         jBodyReq:fromJson(oRest:getBodyRequest())
 
+        cCodUni   := jBodyReq['dxl_coduni']
         cCodigo   := jBodyReq['dxl_codigo']
         cDtdigi   := jBodyReq['dxl_dtdigi']
         cSafra    := jBodyReq['dxl_safra' ]
@@ -55,7 +62,8 @@ method incluir_rolinho() class zGMSAPI003
         cXsnetq   := jBodyReq['dxl_xsnetq']
         nXumicl   := jBodyReq['dxl_xumicl']
 
-        aDados  := {{"DXL_CODIGO"   ,cCodigo ,Nil},;
+        aDados  := {{"DXL_CODUNI"   ,cCodUni ,Nil},;
+                    {"DXL_CODIGO"   ,cCodigo ,Nil},;
                     {"DXL_DTDIGI"   ,cDtdigi ,Nil},;
                     {"DXL_SAFRA"    ,cSafra  ,Nil},;
                     {"DXL_CODPRO"   ,cCodpro ,Nil},;
@@ -77,8 +85,11 @@ method incluir_rolinho() class zGMSAPI003
                     {"DXL_XSNETQ"   ,cXsnetq ,Nil},;
                     {"DXL_XUMICL"   ,nXumicl ,Nil}}
 
+    
+
+
         lMsErroAuto := .F.
-        msExecAuto({|x,y| agra601(x,y)}, aDados, nOpc)
+        msExecAuto({|x,y| AGRA601(x,y)}, aDados, nOpc)
         
         if lMsErroAuto
             mostraErro('\data\','erro_dxl.txt')
@@ -243,8 +254,10 @@ method lista_rolinhos() class zGMSAPI003
 Return .T.
 
 
-//Esse aqui é o JSON de exemplo que estou enviando no POST
+///JSON que estou usando
+
 {
+  "dxl_coduni":"999996-2324-1-0001-22 ",
   "dxl_codigo": "999996",
   "dxl_dtdigi": "2024-06-20T12:20:34",
   "dxl_safra": "2324",
@@ -252,20 +265,21 @@ Return .T.
   "dxl_prdtor": "1",
   "dxl_ljpro": "0001",
   "dxl_faz": "11",
-  "dxl_talhao": "11-SM04-10",
-  "dxl_codvar": "603018",
+  "dxl_talhao": "",
+  "dxl_codvar": "",
   "dxl_local": "04",
   "dxl_psesti": 2800,
   "dxl_borda": "2",
   "dxl_status": "1",
-  "dxl_ordclt": "999",
-  "dxl_cordx": "-12.905197126953128",
-  "dxl_cordy": "-55.93049951015627",
+  "dxl_ordclt": "",
+  "dxl_cordx": "",
+  "dxl_cordy": "",
   "dxl_obs": "Cadastrado por daniel via API",
-  "dxl_origem": "A",
+  "dxl_origem": "M",
   "dxl_xrfid": "123456asd213456asd",
   "dxl_xsnetq": "21605259206",
-  "dxl_xumicl": 8
+  "dxl_xumicl": 0
 }
+
 
 
